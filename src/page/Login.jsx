@@ -20,7 +20,7 @@ export default class Login extends Component {
       .get("http://10.5.7.3:8000/api/siswa", {
         headers: {
           "Content-Type": "application/octet-stream",
-          "Access-Control-Allow-Origin": false
+          "Access-Control-Allow-Origin": true
         }
       })
       .then(res => console.log(res));
