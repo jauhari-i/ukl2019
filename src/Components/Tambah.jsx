@@ -1,7 +1,96 @@
 import React, { Component } from "react";
 import Footer from "./Footer";
+import Axios from "axios";
 
 export default class Tambah extends Component {
+  state = {
+    poin: [],
+    siswa: [],
+    pelanggaran: [],
+    idSiswa: 0,
+    idPelanggaran: 0,
+    keterangan: "",
+    petugas: []
+  };
+  getPoin() {
+    Axios.get("/api/poin").then(res => {
+      const data = res.data
+      this.setState({ poin: data.poin });
+    });
+  }
+
+  getPelanggaran() {
+    Axios.get("/api/pelanggaran").then(res => {
+      const data = res.data;
+      this.setState({ pelanggaran: data.pelanggaran });
+    });
+  }
+
+  getSiswa() {
+    Axios.get("/api/siswa").then(res => {
+      const data = res.data;
+      this.setState({ siswa: data.siswa });
+    });
+  }
+
+  componentDidMount() {
+    this.getPelanggaran();
+    this.getPoin();
+    this.getSiswa();
+    if (!localStorage.user) {
+      Axios.get("/api/login/check", {
+        headers: { Authorization: `Bearer ${localStorage.usertoken}` }
+      }).then(res => {
+        const user = res.data.user;
+        localStorage.setItem("user", JSON.stringify(user));
+      });
+    } else {
+      this.setState({ user: JSON.parse(localStorage.user) });
+    }
+  }
+
+  onChangeHandler(e) {
+    e.preventDefault();
+    this.setState({
+      [e.target.name]: e.target.value
+    });
+  }
+
+  onSubmitPoin(e) {
+    e.preventDefault();
+    const date = "2019-12-10 00:00:00";
+    console.log(date);
+    Axios.post("/api/poin", {
+      id_siswa: this.state.idSiswa,
+      id_pelanggaran: this.state.idPelanggaran,
+      keterangan: this.state.keterangan,
+      tanggal: date,
+      id_petugas: this.state.user.id
+    }).then(res => {
+      if (res.data.status === "1") {
+        this.getPoin();
+        this.setState({
+          idSiswa: 0,
+          idPelanggaran: 0,
+          keterangan: ""
+        });
+      } else {
+        console.log(res.data);
+      }
+    });
+  }
+
+  deletePoin(e, id) {
+    e.preventDefault()
+    Axios.delete(`/api/poin/${id}`).then(res => {
+      if (res.data.status === "1") {
+        this.getPoin();
+      } else {
+        this.getPoin();
+        console.log(res.data);
+      }
+    })
+  }
   render() {
     return (
       <div>
@@ -40,48 +129,27 @@ export default class Tambah extends Component {
                             </tr>
                           </thead>
                           <tbody>
-                            <tr>
-                              <td>10/12/2019</td>
-                              <td>Herman Beck Supriadi</td>
-                              <td>X RPL 2</td>
-                              <td>Kedisiplinan</td>
-                              <td>Terlambat masuk sekolah</td>
-                              <td>
-                                <div class="badge badge-primary">15</div>
-                              </td>
-                              <td>
-                                <a
-                                  href="#"
+                            {this.state.poin ? this.state.poin.map((item, i) => (
+                              <tr key={i}>
+                                <td>{item.tanggal}</td>
+                                <td>{item.nama_siswa}</td>
+                                <td>{item.kelas}</td>
+                                <td>{item.kategori}</td>
+                                <td>{item.nama_pelanggaran}</td>
+                                <td>
+                                <div className="badge badge-primary">{item.poin}</div></td>
+                                <td>
+                                  <button
+                                    type="button"
+                                    onClick={e => this.deletePoin(e,item.id)}
                                   class="btn btn-sm btn-danger btn-icon-text"
-                                  data-toggle="modal"
-                                  data-target="#modalDetail"
                                 >
                                   <i class="mdi mdi-delete btn-icon-prepend"></i>
                                   Hapus
-                                </a>
-                              </td>
-                            </tr>
-                            <tr>
-                              <td>01/12/2019</td>
-                              <td>John Abraham Sutanto</td>
-                              <td>XII TKJ 4</td>
-                              <td>Kerapian</td>
-                              <td>Seragam tidak sesuai ketentuan</td>
-                              <td>
-                                <div class="badge badge-primary">10</div>
-                              </td>
-                              <td>
-                                <a
-                                  href="#"
-                                  class="btn btn-sm btn-danger btn-icon-text"
-                                  data-toggle="modal"
-                                  data-target="#modalDetail"
-                                >
-                                  <i class="mdi mdi-delete btn-icon-prepend"></i>
-                                  Hapus
-                                </a>
-                              </td>
-                            </tr>
+                                </button>
+                                </td>
+                              </tr>
+                            )) : ''}
                           </tbody>
                         </table>
                       </div>
@@ -115,21 +183,25 @@ export default class Tambah extends Component {
                     </button>
                   </div>
                   <div class="modal-body">
-                    <form>
+                    <form onSubmit={e => this.onSubmitPoin(e)}>
                       <div class="form-group">
                         <label for="id_siswa" class="col-form-label">
                           Nama Siswa
                         </label>
                         <select
                           class="form-control"
-                          name="id_siswa"
+                          name="idSiswa"
+                          value={this.state.idSiswa}
+                          onChange={e => this.onChangeHandler(e)}
                           id="id_siswa"
                         >
-                          <option value="1" checked>
-                            Herman Beck Supriadi
-                          </option>
-                          <option value="2">John Abraham Sutanto</option>
-                          <option value="3">Nateila Ayu Rahmawati</option>
+                          {this.state.siswa
+                            ? this.state.siswa.map((item, i) => (
+                                <option value={item.id}>
+                                  {item.nama_siswa}
+                                </option>
+                              ))
+                            : ""}
                         </select>
                       </div>
                       <div class="form-group">
@@ -138,16 +210,18 @@ export default class Tambah extends Component {
                         </label>
                         <select
                           class="form-control"
-                          name="id_pelanggaran"
+                          name="idPelanggaran"
+                          value={this.state.idPelanggaran}
+                          onChange={e => this.onChangeHandler(e)}
                           id="id_pelanggaran"
                         >
-                          <option value="1" checked>
-                            Terlambat masuk sekolah
-                          </option>
-                          <option value="2">Barang tertinggal</option>
-                          <option value="3">
-                            Seragam tidak sesuai ketentuan
-                          </option>
+                          {this.state.pelanggaran
+                            ? this.state.pelanggaran.map((item, i) => (
+                                <option value={item.id}>
+                                  {item.nama_pelanggaran}
+                                </option>
+                              ))
+                            : ""}
                         </select>
                       </div>
                       <div class="form-group">
@@ -159,11 +233,13 @@ export default class Tambah extends Component {
                           name="keterangan"
                           class="form-control"
                           id="keterangan"
+                          value={this.state.keterangan}
+                          onChange={e => this.onChangeHandler(e)}
                           placeholder="Keterangan"
                         />
                       </div>
                       <div class="form-group">
-                        <button type="button" class="btn btn-md btn-success">
+                        <button type="submit" class="btn btn-md btn-success">
                           Simpan
                         </button>
                         <button

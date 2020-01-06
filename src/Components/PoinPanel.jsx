@@ -1,7 +1,44 @@
 import React, { Component } from "react";
 import Footer from "./Footer";
+import Axios from "axios";
 
 export default class PoinPanel extends Component {
+  state = {
+    poin: [],
+    poinDetail: [],
+    cari: ""
+  };
+  search = e => {
+    e.preventDefault();
+    this.setState({
+      cari: e.target.value,
+      poin: this.state.poin.filter(data =>
+        new RegExp(e.target.value, "i").exec(data.nama_siswa)
+      )
+    });
+    if (e.target.value === "") {
+      this.getPoin();
+    }
+  };
+  getPoin() {
+    Axios.get("/api/poin_siswa").then(res => {
+      const data = res.data;
+      this.setState({ poin: data.poin });
+    });
+  }
+  componentDidMount() {
+    this.getPoin();
+  }
+  detailId(e, id) {
+    e.preventDefault();
+    Axios.get(`/api/poin_siswa/${id}`).then(res => {
+      const data = res.data;
+      this.setState({
+        poinDetail: data.detail
+      });
+      console.log(data);
+    });
+  }
   render() {
     return (
       <div>
@@ -15,21 +52,12 @@ export default class PoinPanel extends Component {
                       <p className="card-title float-left">
                         <b>Data Poin Siswa</b>
                       </p>
-                      <p className="card-description float-right">
-                        <a
-                          href="#"
-                          className="btn btn-sm btn-success btn-icon-text"
-                          data-toggle="modal"
-                          data-target="#modalDetail"
-                        >
-                          <i className="mdi mdi-plus btn-icon-prepend"></i>
-                          Tambah
-                        </a>
-                      </p>
                       <div className="table-responsive">
                         <input
                           type="text"
                           placeholder="Pencarian Siswa..."
+                          onChange={this.search}
+                          value={this.state.cari}
                           name="cari"
                           id="cari"
                           className="form-control"
@@ -46,44 +74,31 @@ export default class PoinPanel extends Component {
                             </tr>
                           </thead>
                           <tbody>
-                            <tr>
-                              <td>1234/12/23/20.09</td>
-                              <td>Herman Beck Supriadi</td>
-                              <td>X RPL 2</td>
-                              <td>
-                                <div className="badge badge-primary">100</div>
-                              </td>
-                              <td>
-                                <a
-                                  href="#"
-                                  className="btn btn-sm btn-warning btn-icon-text"
-                                  data-toggle="modal"
-                                  data-target="#modalDetail"
-                                >
-                                  <i className="mdi mdi-file-document-box-outline btn-icon-prepend"></i>
-                                  Detail
-                                </a>
-                              </td>
-                            </tr>
-                            <tr>
-                              <td>1234/12/23/20.09</td>
-                              <td>John Abraham Sutanto</td>
-                              <td>XII TKJ 4</td>
-                              <td>
-                                <div className="badge badge-primary">200</div>
-                              </td>
-                              <td>
-                                <a
-                                  href="#"
-                                  className="btn btn-sm btn-warning btn-icon-text"
-                                  data-toggle="modal"
-                                  data-target="#modalDetail"
-                                >
-                                  <i className="mdi mdi-file-document-box-outline btn-icon-prepend"></i>
-                                  Detail
-                                </a>
-                              </td>
-                            </tr>
+                            {this.state.poin
+                              ? this.state.poin.map((item, i) => (
+                                  <tr>
+                                    <td>{item.nis}</td>
+                                    <td>{item.nama_siswa}</td>
+                                    <td>{item.kelas}</td>
+                                    <td>
+                                      <div className="badge badge-primary">
+                                        {item.total_poin}
+                                      </div>
+                                    </td>
+                                    <td>
+                                      <button
+                                        onClick={e => this.detailId(e, item.id)}
+                                        className="btn btn-sm btn-warning btn-icon-text"
+                                        data-toggle="modal"
+                                        data-target="#modalDetail"
+                                      >
+                                        <i className="mdi mdi-file-document-box-outline btn-icon-prepend"></i>
+                                        Detail
+                                      </button>
+                                    </td>
+                                  </tr>
+                                ))
+                              : ""}
                           </tbody>
                         </table>
                       </div>
@@ -128,24 +143,19 @@ export default class PoinPanel extends Component {
                         </tr>
                       </thead>
                       <tbody>
-                        <tr>
-                          <td>10/11/2019</td>
-                          <td>Terlambat masuk sekolah</td>
-                          <td>Kedisiplinan</td>
-                          <td>Baru datang jam 07.00</td>
-                          <td>
-                            <div className="badge badge-primary">15</div>
-                          </td>
-                        </tr>
-                        <tr>
-                          <td>01/05/2019</td>
-                          <td>Barang Ketinggalan</td>
-                          <td>Kedisiplinan</td>
-                          <td>Charger Ketinggalan</td>
-                          <td>
-                            <div className="badge badge-primary">10</div>
-                          </td>
-                        </tr>
+                        {this.state.poinDetail
+                          ? this.state.poinDetail.map((item, i) => (
+                              <tr key={i}>
+                              <td>{item.tanggal}</td>
+                              <td>{item.nama_pelanggaran}</td>
+                              <td>{item.kategori}</td>
+                              <td>{item.keterangan}</td>
+                              <td>
+                              <div className="badge badge-primary">{item.poin}</div>
+                              </td>
+                            </tr>
+                            ))
+                          : ""}
                       </tbody>
                     </table>
                   </div>

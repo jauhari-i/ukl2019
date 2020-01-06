@@ -15,22 +15,23 @@ export default class Login extends Component {
     e.preventDefault();
     this.setState({ [e.target.name]: e.target.value });
   }
-  componentDidMount() {
-    axios
-      .get("http://10.5.7.3:8000/api/siswa", {
-        headers: {
-          "Content-Type": "application/octet-stream",
-          "Access-Control-Allow-Origin": true
-        }
-      })
-      .then(res => console.log(res));
-  }
-
   loginSubmit(e) {
     e.preventDefault();
     if (!this.state.email || !this.state.password) {
       this.setState({ msg: "Tolong isi semua data" });
     } else {
+      axios
+        .post("/api/login", {
+          email: this.state.email,
+          password: this.state.password
+        })
+        .then(res => {
+          if (res.data.logged === true) {
+            localStorage.setItem("usertoken", res.data.token);
+            this.props.history.push("/");
+          } else {
+          }
+        });
     }
   }
   render() {

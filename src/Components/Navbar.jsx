@@ -1,7 +1,29 @@
 import React, { Component } from "react";
 import { Link } from "react-router-dom";
+import Axios from "axios";
 
 export default class Navbar extends Component {
+  state = {
+    user: []
+  }
+  logout(e) {
+    e.preventDefault();
+    localStorage.removeItem("usertoken");
+    localStorage.removeItem("user")
+    window.location.reload();
+  }
+  componentDidMount() {
+    if (!localStorage.user) {
+      Axios.get("/api/login/check", {
+        headers: { Authorization: `Bearer ${localStorage.usertoken}` }
+      }).then(res => {
+        const user = res.data.user;
+        localStorage.setItem("user", JSON.stringify(user));
+      });
+    } else {
+      this.setState({user: JSON.parse(localStorage.user)})
+    }
+  }
   render() {
     return (
       <div>
@@ -26,16 +48,19 @@ export default class Navbar extends Component {
                         data-toggle="dropdown"
                         id="profileDropdown"
                       >
-                        Hi, Admin
+                        Hi {this.state.user.name}
                       </a>
                       <div
                         className="dropdown-menu dropdown-menu-right navbar-dropdown"
                         aria-labelledby="profileDropdown"
                       >
-                        <a className="dropdown-item">
+                        <button
+                          onClick={e => this.logout(e)}
+                          className="dropdown-item"
+                        >
                           <i className="mdi mdi-logout text-primary"></i>
                           Logout
-                        </a>
+                        </button>
                       </div>
                     </li>
                   </ul>

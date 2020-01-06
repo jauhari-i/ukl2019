@@ -3,6 +3,17 @@ import Footer from "./Footer";
 
 export default class DashboardPanel extends Component {
   render() {
+    const { stats, top } = this.props;
+    const maps = {};
+    const noData = (
+      <div className="list d-flex align-items-center border-bottom pb-3">
+        <div className="wrapper w-100">
+          <p>
+            <b>Tidak ada data pelanggaran</b>
+          </p>
+        </div>
+      </div>
+    );
     return (
       <div>
         <div className="container-fluid page-body-wrapper">
@@ -15,7 +26,7 @@ export default class DashboardPanel extends Component {
                       <div className="card bg-gradient-primary text-white text-center card-shadow-primary">
                         <div className="card-body">
                           <h6 className="font-weight-normal">Data Siswa</h6>
-                          <h2 className="mb-0">1450</h2>
+                          <h2 className="mb-0">{stats.jml_siswa}</h2>
                         </div>
                       </div>
                     </div>
@@ -23,7 +34,7 @@ export default class DashboardPanel extends Component {
                       <div className="card bg-gradient-warning text-white text-center card-shadow-warning">
                         <div className="card-body">
                           <h6 className="font-weight-normal">Data Petugas</h6>
-                          <h2 className="mb-0">8</h2>
+                          <h2 className="mb-0">{stats.jml_petugas}</h2>
                         </div>
                       </div>
                     </div>
@@ -33,7 +44,7 @@ export default class DashboardPanel extends Component {
                           <h6 className="font-weight-normal">
                             Data Pelanggaran
                           </h6>
-                          <h2 className="mb-0">120</h2>
+                          <h2 className="mb-0">{stats.jml_data_pelanggaran}</h2>
                         </div>
                       </div>
                     </div>
@@ -43,7 +54,7 @@ export default class DashboardPanel extends Component {
                           <h6 className="font-weight-normal">
                             Siswa Melanggar Hari Ini
                           </h6>
-                          <h2 className="mb-0">12</h2>
+                          <h2 className="mb-0">{stats.pelanggaran_hari_ini}</h2>
                         </div>
                       </div>
                     </div>
@@ -58,51 +69,23 @@ export default class DashboardPanel extends Component {
                           Tertinggi
                         </h6>
                       </div>
-                      <div className="list d-flex align-items-center border-bottom pb-3">
-                        <div className="wrapper w-100">
-                          <p>
-                            <b>George Bambang Prakoso</b>{" "}
-                            <span className="badge badge-danger">300</span>
-                          </p>
-                          <small className="text-muted">XI RPL 2</small>
-                        </div>
-                      </div>
-                      <div className="list d-flex align-items-center border-bottom py-3">
-                        <div className="wrapper w-100">
-                          <p>
-                            <b>John Fikri Santoso</b>{" "}
-                            <span className="badge badge-danger">280</span>
-                          </p>
-                          <small className="text-muted">XII TKJ 3</small>
-                        </div>
-                      </div>
-                      <div className="list d-flex align-items-center border-bottom py-3">
-                        <div className="wrapper w-100">
-                          <p>
-                            <b>Peter Sudarmono Pambudi</b>{" "}
-                            <span className="badge badge-danger">260</span>
-                          </p>
-                          <small className="text-muted">X RPL 6</small>
-                        </div>
-                      </div>
-                      <div className="list d-flex align-items-center border-bottom py-3">
-                        <div className="wrapper w-100">
-                          <p>
-                            <b>Nateila Ayu Rahmawati</b>{" "}
-                            <span className="badge badge-danger">200</span>
-                          </p>
-                          <small className="text-muted">X TKJ 2</small>
-                        </div>
-                      </div>
-                      <div className="list d-flex align-items-center pt-3">
-                        <div className="wrapper w-100">
-                          <p>
-                            <b>Ahmad Tom Jerry</b>{" "}
-                            <span className="badge badge-danger">187</span>
-                          </p>
-                          <small className="text-muted">3 hours ago</small>
-                        </div>
-                      </div>
+                      {top
+                        ? top.map((item, i) => (
+                            <div key={i}>
+                              <div class="list d-flex align-items-center border-bottom pb-3">
+                                <div class="wrapper w-100">
+                                  <p>
+                                    <b>{item.nama_siswa}</b>{" "}
+                                    <span class="badge badge-danger ml-2">
+                                      {item.total_poin}
+                                    </span>
+                                  </p>
+                                  <small class="text-muted">{item.kelas}</small>
+                                </div>
+                              </div>
+                            </div>
+                          ))
+                        : noData}
                     </div>
                   </div>
                 </div>
